@@ -44,7 +44,8 @@ from adaptive_cards.into_adaptive_card import INTRO_ADAPTIVE_CARD_CONTENT
 from adaptive_cards.login_otp_page import LOGIN_OTP_CARD_CONTENT
 from adaptive_cards.invoice_adaptive_card import INVOICE_ADAPTIVE_CARD
 from adaptive_cards.transaction_list_adaptive_card import ADAPTIVE_CARD_CONTENT
-
+from adaptive_cards.loan_application_card import LOAN_APPLICATION_CARD
+from adaptive_cards.deposits_application_card import DEPOSITS_APPLICATION_CARD
 
 from cards.send_intro_card import intro_card
 from cards.mobile_billPaymentConfirmation_card import billPaymentConfirmation_card
@@ -214,9 +215,13 @@ class LuisConnect(ActivityHandler):
                 await turn_context.send_activity("Insufficient account balance. Please choose another account")
                 await self.__show_selectAccountForBill_card(turn_context)
             elif intent == 'Loan':
-                entity = json.loads((str(result.entities[0])).replace("'", "\""))['entity']
-                entity_type = json.loads((str(result.entities[0])).replace("'", "\""))['type']
-                await turn_context.send_activity(f'Echo {entity_type} {intent}')
+                # entity = json.loads((str(result.entities[0])).replace("'", "\""))['entity']
+                # entity_type = json.loads((str(result.entities[0])).replace("'", "\""))['type']
+                await self.__loan_application_card(turn_context)
+            elif intent == 'Deposits':
+                # entity = json.loads((str(result.entities[0])).replace("'", "\""))['entity']
+                # entity_type = json.loads((str(result.entities[0])).replace("'", "\""))['type']
+                await self.__deposits_application_card(turn_context)
             elif query in ("369"):
                 await self.__send_intro_card(turn_context)
 
@@ -285,3 +290,16 @@ class LuisConnect(ActivityHandler):
         return await turn_context.send_activity(
             MessageFactory.attachment(CardFactory.thumbnail_card(mobile_confirmation_card()))
         )
+
+    async def __loan_application_card(self, turn_context: TurnContext):
+
+        return await turn_context.send_activity(
+            MessageFactory.attachment(CardFactory.adaptive_card(LOAN_APPLICATION_CARD))
+        )
+
+    async def __deposits_application_card(self, turn_context: TurnContext):
+
+        return await turn_context.send_activity(
+            MessageFactory.attachment(CardFactory.adaptive_card(DEPOSITS_APPLICATION_CARD))
+        )
+
