@@ -1,2 +1,1 @@
-# smart_bank_assistance_LUIS
-LUIS integrated Smart_bank_assistance
+# Weather-Chatbot-Using-Luis
