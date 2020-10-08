@@ -15,12 +15,12 @@ LOAN_APPLICATION_CARD = {
         {
             "type": "Input.Text",
             "placeholder": "Full Name",
-            "id": "1"
+            "id": "name"
         },
         {
             "type": "Input.Number",
             "placeholder": "Loan Amount",
-            "id": "6"
+            "id": "amount"
         },
         {
             "type": "Input.ChoiceSet",
@@ -43,14 +43,14 @@ LOAN_APPLICATION_CARD = {
                 }
             ],
             "placeholder": "Select Loan Type",
-            "id": "5",
+            "id": "loan_type",
             "separator": True,
             "wrap": True
         },
         {
             "type": "Input.Text",
             "placeholder": "Debiting Account Number",
-            "id": "4"
+            "id": "account_number"
         },
         {
             "type": "ActionSet",
@@ -58,9 +58,9 @@ LOAN_APPLICATION_CARD = {
                 {
                     "type": "Action.Submit",
                     "data": {
-                            "type": "Submit"
+                        "type": "Apply Loan"
                     },
-                    "title": "Submit",
+                    "title": "Apply",
                 }
             ]
         }

@@ -15,7 +15,7 @@ DEPOSITS_APPLICATION_CARD = {
         {
             "type": "Input.Text",
             "placeholder": "Full Name",
-            "id": "1"
+            "id": "name"
         },
         {
             "type": "Input.ChoiceSet",
@@ -30,22 +30,22 @@ DEPOSITS_APPLICATION_CARD = {
                 }
             ],
             "placeholder": "Select Deposit Type",
-            "id": "8"
+            "id": "deposit_type"
         },
         {
             "type": "Input.Number",
             "placeholder": "Amount",
-            "id": "6"
+            "id": "amount"
         },
         {
             "type": "Input.Number",
             "placeholder": "Period (Months)",
-            "id": "7"
+            "id": "period"
         },
         {
             "type": "Input.Text",
             "placeholder": "Debiting Account Number",
-            "id": "4"
+            "id": "account_number"
         },
 {
             "type": "ActionSet",
@@ -53,9 +53,9 @@ DEPOSITS_APPLICATION_CARD = {
                 {
                     "type": "Action.Submit",
                     "data": {
-                            "type": "Submit"
+                            "type": "Apply Deposit"
                     },
-                    "title": "Submit",
+                    "title": "Apply",
                 }
             ]
         }
