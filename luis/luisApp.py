@@ -139,7 +139,7 @@ class LuisConnect(ActivityHandler):
                 await turn_context.send_activity(reply)
                 # await turn_context.send_activity(f"Echo: \n\n Intent: {intent}")
                 # await self.__send_intro_card(turn_context)
-            elif intent == 'UserLogin' and isvalid == False:
+            elif intent == 'UserLogin':
                 await self.__login_otp_card_card(turn_context)
             elif intent == 'Accounts':
                 # entity = json.loads((str(result.entities[0])).replace("'", "\""))['entity']
@@ -261,4 +261,3 @@ class LuisConnect(ActivityHandler):
         return await turn_context.send_activity(
             MessageFactory.attachment(CardFactory.adaptive_card(DEPOSITS_APPLICATION_CARD))
         )
-
