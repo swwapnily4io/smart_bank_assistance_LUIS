@@ -14,7 +14,7 @@ from botbuilder.core import (
 )
 
 
-APP = Flask(__name__)
+app = Flask(__name__)
 loop = asyncio.get_event_loop()
 
 bot_settings = BotFrameworkAdapterSettings("", "")
@@ -51,4 +51,4 @@ def messages():
 
 if __name__ == '__main__':
     #app.run(port= 3978)
-    APP.run()
+    app.run()
