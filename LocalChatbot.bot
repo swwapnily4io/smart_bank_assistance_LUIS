@@ -1,0 +1,18 @@
+{
+    "name": "LocalChatbot",
+    "description": "",
+    "services": [
+        {
+            "type": "endpoint",
+            "appId": "",
+            "appPassword": "",
+            "endpoint": "http://127.0.0.1:5000/",
+            "id": "224c4c00-0ac6-11eb-be12-230c72f223e1",
+            "name": "http://127.0.0.1:5000/"
+        }
+    ],
+    "padlock": "",
+    "version": "2.0",
+    "overrides": null,
+    "path": "C:\\Users\\chakraborty_Sa\\Documents\\MS AZURE CHATBOT\\github\\smart_bank_assistance_LUIS\\LocalChatbot.bot"
+}
