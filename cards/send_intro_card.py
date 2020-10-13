@@ -37,6 +37,20 @@ def intro_card():
                 display_text="Service Requests",
                 value="Service Requests",
             ),
+            CardAction(
+                type=ActionTypes.im_back,
+                title="Loan",
+                text="Apply Loan",
+                display_text="Apply Loan",
+                value="Apply Loan",
+            ),
+            CardAction(
+                type=ActionTypes.im_back,
+                title="Deposits",
+                text="Apply Deposits",
+                display_text="Apply Deposits",
+                value="Apply Deposits",
+            ),
         ],
     )
 
