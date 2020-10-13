@@ -1,5 +1,6 @@
 from botbuilder.ai.luis import LuisApplication,LuisPredictionOptions,LuisRecognizer
 import json
+
 #from config.config_reader import ConfigReader
 from config.config_reader import ConfigReader
 from logger.logger import Log
@@ -110,6 +111,7 @@ class LuisConnect(ActivityHandler):
         # weather_info=WeatherInformation()
         luis_result = await self.luis_recognizer.recognize(turn_context)
         text = luis_result.text
+        print(text)
         isvalid = False
         if luis_result.properties == {}:
             print("unrecognized intent --> adaptive")
