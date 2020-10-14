@@ -22,7 +22,7 @@ from http import HTTPStatus
 from botbuilder.core.integration import aiohttp_error_middleware
 from botbuilder.schema import Activity, ActivityTypes
 
-app = Flask(__name__)
+APP = Flask(__name__)
 loop = asyncio.get_event_loop()
 
 #added change
