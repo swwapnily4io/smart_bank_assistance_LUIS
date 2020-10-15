@@ -1,5 +1,7 @@
 from botbuilder.ai.luis import LuisApplication,LuisPredictionOptions,LuisRecognizer
 import json
+
+#from config.config_reader import ConfigReader
 from config.config_reader import ConfigReader
 from logger.logger import Log
 from botbuilder.core import (
@@ -18,8 +20,6 @@ from botbuilder.schema import (
     CardAction,
     ActionTypes,
 )
-import requests
-from requests.auth import HTTPBasicAuth
 
 from adaptive_cards.congratulations_adaptive_card import CONGRATULATIONS_ADAPTIVE_CARD
 from adaptive_cards.into_adaptive_card import INTRO_ADAPTIVE_CARD_CONTENT
@@ -39,8 +39,6 @@ from cards.show_selectAccountForBill_card import account_SelectionForBill_card
 from references_intentless.login_reference import login
 from references_intentless.deposit_reference import deposit
 from references_intentless.loan_reference import loan
-
-from adaptive_cards.transactionhistory_adaptive_card import transaction_history_card
 
 class LuisConnect(ActivityHandler):
     def __init__(self, user_state: UserState):
@@ -115,95 +113,104 @@ class LuisConnect(ActivityHandler):
         text = luis_result.text
         print(text)
         isvalid = False
-        if luis_result.properties == {}:
-            print("unrecognized intent --> adaptive")
-            if turn_context._activity.value["type"] in ("Login"):
-                message =  login(turn_context)
-                await turn_context.send_activity(message)
-            elif turn_context._activity.value["type"] in ("Apply Deposit"):
-                #print("Printing fd_rd------", turn_context._activity.value["deposit_type"])
-                message = deposit(turn_context)
-                await turn_context.send_activity(message)
-            elif turn_context._activity.value["type"] in ("Apply Loan"):
-                #print("Printing fd_rd------", turn_context._activity.value["deposit_type"])
-                message = loan(turn_context)
-                await turn_context.send_activity(message)
+        if isvalid == False:
+            if luis_result.properties == {}:
+                print("unrecognized intent --> adaptive")
+                if turn_context._activity.value["type"] in ("Login"):
+                    message = login(turn_context)
+                    isvalid = True
+                    await turn_context.send_activity(message)
 
-        else:
+            else:
 
-            result = luis_result.properties["luisResult"]
-            reply = MessageFactory.list([])
-            query = result.query
-            intent = json.loads((str(result.intents[0])).replace("'", "\""))['intent']
+                result = luis_result.properties["luisResult"]
+                reply = MessageFactory.list([])
+                query = result.query
+                # print(query)
+                intent = json.loads((str(result.intents[0])).replace("'", "\""))['intent']
+                # print(intent)
 
-            if intent == 'WelcomeUser' and query not in ("1234", "369"):
-                reply.attachments.append(self.create_signin_card())
-                await turn_context.send_activity(reply)
-            elif intent == 'UserLogin':
-                await self.__login_otp_card_card(turn_context)
-            elif intent == 'Accounts':
-                await self.__send_accountbalance_card(turn_context)
-                await turn_context.send_activity(
-                    "Also, your deposit xxxxxxxxx9243 is closed pre-maturely as per your request and amount is credited to your third party account.")
-            elif intent == 'CreditCard':
-                await turn_context.send_activity(
-                    "Credit card xxxxxxxxxxxx7653 \n\n Current outstanding is $0.00 \n\n Card closed on 09/01/2020 \n\n Balance reward points are 514")
-            elif intent == 'ServiceRequest':
-                await turn_context.send_activity("Currently there are no open service requests.")
-            elif query in ('xxxxxxxxx4567', 'xxxxxxxxx4566'):
-                # await self.__list_accountTransaction_card(turn_context)
-                # await self.__mobile_billDue_card(turn_context)
-                PARAMS = {'accountNo': 123456}
-                # Getting OAuth Token
-                url = "http://localhost:8080/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
-                payload = {}
-                files = {}
-                response = requests.request("POST", url, auth=HTTPBasicAuth('web', 'webpass'), data=payload,files=files)
-                print(response.text.encode('utf8'))
-                print(response.json()["access_token"])
-                # Getting transaction history
-                url = "http://localhost:8080/api/getTransactionHistory"
-                payload = {}
-                headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
-                historyResp = requests.request("GET", url, headers=headers, data=payload, params=PARAMS)
-                print(historyResp.text.encode('utf8'))
-                data = historyResp.json()
-                print("printing response ", data["statusMsg"])
-                # Creating transactionHistory Card
-                card = transaction_history_card(data).to_dict()
-                # First column contents
-                # Second column contents
-                # transactionHistoryCard.add(Column(width=1))
-                # transactionHistoryCard.add(Image(url="https://s17026.pcdn.co/wp-content/uploads/sites/9/2018/08/Business-bank-account-e1534519443766.jpeg"))
-                # await self.__list_accountTransaction_card(turn_context)
-                # await self.__mobile_billDue_card(turn_context)
-                await turn_context.send_activity(
-                    MessageFactory.attachment(CardFactory.adaptive_card(await card)))
+                if intent == 'WelcomeUser' and query not in ("1234", "369"):
+                    reply.attachments.append(self.create_signin_card())
+                    await turn_context.send_activity(reply)
+                    # await turn_context.send_activity(f"Echo: \n\n Intent: {intent}")
+                    # await self.__send_intro_card(turn_context)
+                elif intent == 'UserLogin':
+                    await self.__login_otp_card_card(turn_context)
 
-            elif intent == 'Billing':
-                await self.__show_invoice_card(turn_context)
-                await self.__show_selectAccountForBill_card(turn_context)
-            elif intent == "Debit_From" and query in ("Debit from xxxxxxxxx4567"):
-                await turn_context.send_activity("An OTP is sent to your registered mobile number xxxxxxxx90.")
-                await turn_context.send_activity("Please enter the OTP.")
-            elif query == "1234":
-                await turn_context.send_activity(
-                    "Transaction Successful !! Mobile bill paid for $100 from your account number xxxxxxxxx4567")
-                await turn_context.send_activity(
-                    "As a loyal customer, we are happy to offer you one year free VISA card which comes with $25 movie voucher.\n\n Also your balance reward points 514 from card xxxxxxxxxxxx7653 will be added to the new card.")
-                await self.__show_congratulations_card(turn_context)
-            elif query in ("xxxxxxxxx4566"):
-                await turn_context.send_activity(
-                    "Your current account xxxxxxxxx4566 is Active, but there are no transactions on it.")
-            elif intent == "Debit_From" and query in ("Debit from xxxxxxxxx4566"):
-                await turn_context.send_activity("Insufficient account balance. Please choose another account")
-                await self.__show_selectAccountForBill_card(turn_context)
-            elif intent == 'Loan':
-                await self.__loan_application_card(turn_context)
-            elif intent == 'Deposits':
-                await self.__deposits_application_card(turn_context)
-            elif query in ("369"):
-                await self.__send_intro_card(turn_context)
+        elif isvalid== True:
+            if luis_result.properties == {}:
+                print("unrecognized intent --> adaptive")
+                # if turn_context._activity.value["type"] in ("Login"):
+                #     message =  login(turn_context)
+                #     await turn_context.send_activity(message)
+                if turn_context._activity.value["type"] in ("Apply Deposit"):
+                    #print("Printing fd_rd------", turn_context._activity.value["deposit_type"])
+                    message = deposit(turn_context)
+                    await turn_context.send_activity(message)
+                elif turn_context._activity.value["type"] in ("Apply Loan"):
+                    #print("Printing fd_rd------", turn_context._activity.value["deposit_type"])
+                    message = loan(turn_context)
+                    await turn_context.send_activity(message)
+
+            else:
+
+                result = luis_result.properties["luisResult"]
+                reply = MessageFactory.list([])
+                query = result.query
+                #print(query)
+                intent = json.loads((str(result.intents[0])).replace("'", "\""))['intent']
+                #print(intent)
+
+                # if intent == 'WelcomeUser' and query not in ("1234", "369"):
+                #     reply.attachments.append(self.create_signin_card())
+                #     await turn_context.send_activity(reply)
+                #     # await turn_context.send_activity(f"Echo: \n\n Intent: {intent}")
+                #     # await self.__send_intro_card(turn_context)
+                # elif intent == 'UserLogin':
+                #     await self.__login_otp_card_card(turn_context)
+                if intent == 'Accounts':
+                    # entity = json.loads((str(result.entities[0])).replace("'", "\""))['entity']
+                    # entity_type = json.loads((str(result.entities[0])).replace("'", "\""))['type']
+                    await self.__send_accountbalance_card(turn_context)
+                    await turn_context.send_activity(
+                        "Also, your deposit xxxxxxxxx9243 is closed pre-maturely as per your request and amount is credited to your third party account.")
+                elif intent == 'CreditCard':
+                    await turn_context.send_activity(
+                        "Credit card xxxxxxxxxxxx7653 \n\n Current outstanding is $0.00 \n\n Card closed on 09/01/2020 \n\n Balance reward points are 514")
+                elif intent == 'ServiceRequest':
+                    await turn_context.send_activity("Currently there are no open service requests.")
+                elif query in ('xxxxxxxxx4567', 'xxxxxxxxx4566'):
+                    await self.__list_accountTransaction_card(turn_context)
+                    await self.__mobile_billDue_card(turn_context)
+                elif intent == 'Billing':
+                    await self.__show_invoice_card(turn_context)
+                    await self.__show_selectAccountForBill_card(turn_context)
+                elif intent == "Debit_From" and query in ("Debit from xxxxxxxxx4567"):
+                    await turn_context.send_activity("An OTP is sent to your registered mobile number xxxxxxxx90.")
+                    await turn_context.send_activity("Please enter the OTP.")
+                elif query == "1234":
+                    await turn_context.send_activity(
+                        "Transaction Successful !! Mobile bill paid for $100 from your account number xxxxxxxxx4567")
+                    await turn_context.send_activity(
+                        "As a loyal customer, we are happy to offer you one year free VISA card which comes with $25 movie voucher.\n\n Also your balance reward points 514 from card xxxxxxxxxxxx7653 will be added to the new card.")
+                    await self.__show_congratulations_card(turn_context)
+                elif query in ("xxxxxxxxx4566"):
+                    await turn_context.send_activity(
+                        "Your current account xxxxxxxxx4566 is Active, but there are no transactions on it.")
+                elif intent == "Debit_From" and query in ("Debit from xxxxxxxxx4566"):
+                    await turn_context.send_activity("Insufficient account balance. Please choose another account")
+                    await self.__show_selectAccountForBill_card(turn_context)
+                elif intent == 'Loan':
+                    # entity = json.loads((str(result.entities[0])).replace("'", "\""))['entity']
+                    # entity_type = json.loads((str(result.entities[0])).replace("'", "\""))['type']
+                    await self.__loan_application_card(turn_context)
+                elif intent == 'Deposits':
+                    # entity = json.loads((str(result.entities[0])).replace("'", "\""))['entity']
+                    # entity_type = json.loads((str(result.entities[0])).replace("'", "\""))['type']
+                    await self.__deposits_application_card(turn_context)
+                elif query in ("369"):
+                    await self.__send_intro_card(turn_context)
 
     async def __send_intro_card(self, turn_context: TurnContext):
 
