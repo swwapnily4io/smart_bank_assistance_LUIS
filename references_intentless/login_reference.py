@@ -1,5 +1,6 @@
 from botbuilder.core import (
     TurnContext,)
+import requests
 
 
 def login(turn_context: TurnContext):
@@ -28,16 +29,18 @@ def login(turn_context: TurnContext):
         message = "Please accept the terms and conditions."
         return message
     if (isvalid and turn_context._activity.value["type"] in ("Login")):
-        message = "Login Succeded. \n An OTP is sent to your registered mobile number xxxxxxxx90. \n Please enter the OTP."
-        return message
+        # message = "Login Succeded. \n An OTP is sent to your registered mobile number xxxxxxxx90. \n Please enter the OTP."
+        # return message
         # defining a params dict for the parameters to be sent to the API
-        # PARAMS = {'userName': customerId, 'password': password}
+        PARAMS = {'userName': customerId, 'password': password}
         # sending get request and saving the response as response object
-        # r = requests.get(url="http://localhost:8080/login", params=PARAMS)
+        r = requests.get(url="http://localhost:8080/login", params=PARAMS)
         # extracting data in json format
-        # data = r.json()
-        # print("printing response ", data["loginStatus"])
-        # if (data["loginStatus"] is not None and data["loginStatus"] in ("success")):
+        data = r.json()
+        print("printing response ", data["loginStatus"])
+        if (data["loginStatus"] is not None and data["loginStatus"] in ("success")):
+            message = "Login Succeded. \n An OTP is sent to your registered mobile number xxxxxxxx90. \n Please enter the OTP."
+        return message
         #return turn_context.send_activity("Login Succeded. \n An OTP is sent to your registered mobile number xxxxxxxx90. \n Please enter the OTP.")
         # await turn_context.send_activity()
         # await turn_context.send_activity("Please enter the OTP.")
