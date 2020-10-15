@@ -1,10 +1,9 @@
 from botbuilder.core import (
     TurnContext,)
 import requests
-
+from requests.auth import HTTPBasicAuth
 
 def login(turn_context: TurnContext):
-    print("Printing type------", turn_context._activity.value["type"])
     print("Printing customer id------", turn_context._activity.value["customerId"])
     print("Printing password------", turn_context._activity.value["password"])
 
@@ -29,17 +28,28 @@ def login(turn_context: TurnContext):
         message = "Please accept the terms and conditions."
         return message
     if (isvalid and turn_context._activity.value["type"] in ("Login")):
-        # message = "Login Succeded. \n An OTP is sent to your registered mobile number xxxxxxxx90. \n Please enter the OTP."
-        # return message
+        url = "http://localhost:8080/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+        payload = {}
+        files = {}
+        response = requests.request("POST", url, auth=HTTPBasicAuth('web', 'webpass'), data=payload,files=files)
+        print(response.text.encode('utf8'))
+        print(response.json()["access_token"])
+        
         # defining a params dict for the parameters to be sent to the API
         PARAMS = {'userName': customerId, 'password': password}
         # sending get request and saving the response as response object
-        r = requests.get(url="http://localhost:8080/login", params=PARAMS)
+        url = "http://localhost:8080/api/login"
+        payload = {}
+        headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
+        loginResp = requests.request("GET", url, headers=headers, params=PARAMS)
+        print(loginResp.text.encode('utf8'))
+        data = loginResp.json()
         # extracting data in json format
-        data = r.json()
-        print("printing response ", data["loginStatus"])
+        print("printing loginStatus ", data["loginStatus"])
         if (data["loginStatus"] is not None and data["loginStatus"] in ("success")):
             message = "Login Succeded. \n An OTP is sent to your registered mobile number xxxxxxxx90. \n Please enter the OTP."
+        else:
+            message = "User not found. Please check the username and password."
         return message
         #return turn_context.send_activity("Login Succeded. \n An OTP is sent to your registered mobile number xxxxxxxx90. \n Please enter the OTP.")
         # await turn_context.send_activity()
