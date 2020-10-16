@@ -49,6 +49,10 @@ class LuisConnect(ActivityHandler):
         self.luis_app_id = self.configuration['LUIS_APP_ID']
         self.luis_endpoint_key = self.configuration['LUIS_ENDPOINT_KEY']
         self.luis_endpoint = self.configuration['LUIS_ENDPOINT']
+        self.auth_username = self.configuration['AUTH_USERNAME']
+        self.auth_password = self.configuration['AUTH_PASSWORD']
+        self.url1 = self.configuration['URL1']
+        self.url2 = self.configuration['URL2']
         self.luis_app = LuisApplication(self.luis_app_id, self.luis_endpoint_key, self.luis_endpoint)
         self.luis_options = LuisPredictionOptions(include_all_intents=True, include_instance_data=True)
         self.luis_recognizer = LuisRecognizer(application=self.luis_app, prediction_options=self.luis_options,
@@ -155,17 +159,17 @@ class LuisConnect(ActivityHandler):
                 # await self.__mobile_billDue_card(turn_context)
                 PARAMS = {'accountNo': 123456}
                 # Getting OAuth Token
-                url = "http://localhost:8080/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+                #url = "http://localhost:8080/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
                 payload = {}
                 files = {}
-                response = requests.request("POST", url, auth=HTTPBasicAuth('web', 'webpass'), data=payload,files=files)
+                response = requests.request("POST", self.url1, auth=HTTPBasicAuth(self.auth_username, self.auth_password), data=payload,files=files)
                 print(response.text.encode('utf8'))
                 print(response.json()["access_token"])
                 # Getting transaction history
-                url = "http://localhost:8080/api/getTransactionHistory"
+                #url = "http://localhost:8080/api/getTransactionHistory"
                 payload = {}
                 headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
-                historyResp = requests.request("GET", url, headers=headers, data=payload, params=PARAMS)
+                historyResp = requests.request("GET", self.url2, headers=headers, data=payload, params=PARAMS)
                 print(historyResp.text.encode('utf8'))
                 data = historyResp.json()
                 print("printing response ", data["statusMsg"])
