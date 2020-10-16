@@ -3,9 +3,8 @@ from adaptivecardbuilder import Column, ColumnSet,Image ,TextBlock,AdaptiveCard,
 def transaction_history_card(data):
     transactionHistoryCard = AdaptiveCard(
         backgroundImage="https://image.freepik.com/free-photo/wall-wallpaper-concrete-colored-painted-textured-concept_53876-31799.jpg")
-    # "backgroundImage": "https://image.freepik.com/free-photo/wall-wallpaper-concrete-colored-painted-textured-concept_53876-31799.jpg"
     transactionHistoryCard.add(
-        TextBlock(text="Savings Account xxxxxxxxx4567 - Balance is $112.02", color="light", size="Medium",
+        TextBlock(text="Savings Account xxxxxxxxx4567 - Balance is  $"+str(data["account"]["balance"]), color="light", size="Medium",
                   weight="Bolder"))
     transactionHistoryCard.add(
         TextBlock(text="Last 10 transaction details:", color="light", size="Medium", weight="Bolder"))
