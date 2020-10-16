@@ -33,7 +33,7 @@ from cards.send_intro_card import intro_card
 from cards.mobile_billPaymentConfirmation_card import billPaymentConfirmation_card
 from cards.mobile_billDue_card import mobile_billDue_card
 from cards.mobile_confirmation_card import mobile_confirmation_card
-from cards.send_accountbalance_card import accountbalance_card
+from cards.send_accountbalance_card import accountbalance_card, buildAccountBalance_card
 from cards.show_selectAccountForBill_card import account_SelectionForBill_card
 
 from references_intentless.login_reference import login
@@ -51,8 +51,7 @@ class LuisConnect(ActivityHandler):
         self.luis_endpoint = self.configuration['LUIS_ENDPOINT']
         self.auth_username = self.configuration['AUTH_USERNAME']
         self.auth_password = self.configuration['AUTH_PASSWORD']
-        self.url1 = self.configuration['URL1']
-        self.url2 = self.configuration['URL2']
+        self.restServerURL = self.configuration['REST_SERVER_URL']
         self.luis_app = LuisApplication(self.luis_app_id, self.luis_endpoint_key, self.luis_endpoint)
         self.luis_options = LuisPredictionOptions(include_all_intents=True, include_instance_data=True)
         self.luis_recognizer = LuisRecognizer(application=self.luis_app, prediction_options=self.luis_options,
@@ -120,7 +119,7 @@ class LuisConnect(ActivityHandler):
         print(text)
         isvalid = False
         if luis_result.properties == {}:
-            print("unrecognized intent --> adaptive")
+            print("unrecognized intent --> adaptive",turn_context._activity.value["accountNo"] )
             if turn_context._activity.value["type"] in ("Login"):
                 message =  login(turn_context)
                 await turn_context.send_activity(message)
@@ -146,7 +145,27 @@ class LuisConnect(ActivityHandler):
             elif intent == 'UserLogin':
                 await self.__login_otp_card_card(turn_context)
             elif intent == 'Accounts':
-                await self.__send_accountbalance_card(turn_context)
+                #await self.__send_accountbalance_card(turn_context)
+                PARAMS = {'userName': "steve"}
+                url = self.restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+                payload = {}
+                files = {}
+                response = requests.request("POST", url, auth=HTTPBasicAuth(self.auth_username, self.auth_password), data=payload,files=files)
+                print(response.text.encode('utf8'))
+                print(response.json()["access_token"])
+
+                # Getting transaction history
+                url = self.restServerURL+"/api/getAccounts"
+                payload = {}
+                headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
+                historyResp = requests.request("GET", url, headers=headers, data=payload, params=PARAMS)
+                print(historyResp.text.encode('utf8'))
+                data = historyResp.json()
+                print("printing response ", data["statusMsg"])
+                # Creating transactionHistory Card
+                card = buildAccountBalance_card(data).to_dict()
+                await turn_context.send_activity(
+                    MessageFactory.attachment(CardFactory.adaptive_card(await card)))
                 await turn_context.send_activity(
                     "Also, your deposit xxxxxxxxx9243 is closed pre-maturely as per your request and amount is credited to your third party account.")
             elif intent == 'CreditCard':
@@ -154,36 +173,32 @@ class LuisConnect(ActivityHandler):
                     "Credit card xxxxxxxxxxxx7653 \n\n Current outstanding is $0.00 \n\n Card closed on 09/01/2020 \n\n Balance reward points are 514")
             elif intent == 'ServiceRequest':
                 await turn_context.send_activity("Currently there are no open service requests.")
-            elif query in ('xxxxxxxxx4567', 'xxxxxxxxx4566'):
+            elif query in ('382799319', 'xxxxxxxxx4566'):
                 # await self.__list_accountTransaction_card(turn_context)
                 # await self.__mobile_billDue_card(turn_context)
                 PARAMS = {'accountNo': 123456}
                 # Getting OAuth Token
-                #url = "http://localhost:8080/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+                url = self.restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
                 payload = {}
                 files = {}
-                response = requests.request("POST", self.url1, auth=HTTPBasicAuth(self.auth_username, self.auth_password), data=payload,files=files)
+                response = requests.request("POST", url, auth=HTTPBasicAuth(self.auth_username, self.auth_password), data=payload,files=files)
                 print(response.text.encode('utf8'))
                 print(response.json()["access_token"])
                 # Getting transaction history
-                #url = "http://localhost:8080/api/getTransactionHistory"
+                url = self.restServerURL+"/api/getTransactionHistory"
                 payload = {}
                 headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
-                historyResp = requests.request("GET", self.url2, headers=headers, data=payload, params=PARAMS)
+                historyResp = requests.request("GET", url, headers=headers, data=payload, params=PARAMS)
                 print(historyResp.text.encode('utf8'))
                 data = historyResp.json()
                 print("printing response ", data["statusMsg"])
                 # Creating transactionHistory Card
                 card = transaction_history_card(data).to_dict()
-                # First column contents
-                # Second column contents
-                # transactionHistoryCard.add(Column(width=1))
-                # transactionHistoryCard.add(Image(url="https://s17026.pcdn.co/wp-content/uploads/sites/9/2018/08/Business-bank-account-e1534519443766.jpeg"))
                 # await self.__list_accountTransaction_card(turn_context)
                 # await self.__mobile_billDue_card(turn_context)
                 await turn_context.send_activity(
                     MessageFactory.attachment(CardFactory.adaptive_card(await card)))
-
+                await self.__mobile_billDue_card(turn_context)
             elif intent == 'Billing':
                 await self.__show_invoice_card(turn_context)
                 await self.__show_selectAccountForBill_card(turn_context)

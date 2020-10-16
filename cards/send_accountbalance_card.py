@@ -30,11 +30,11 @@ def buildAccountBalance_card(data):
             print(lst['accountType'])
             accountsCard.add(
                 ActionSubmit(title="" + str(lst['accountType']) +
-                           "\n Account No. " + str(lst['accountNo']) +
-                           "\n Opened date: " + str(lst['createdOn']) +
-                           "\n Balance is:" + str(lst["currencySymbol"]) +
-                           str(lst["balance"]),
-                           value=str(lst['accountNo'])))
+                             "\n Account No. " + str(lst['accountNo']) +
+                             "\n Opened date: " + str(lst['createdOn']) +
+                             "\n Balance is:" + str(lst["currencySymbol"]) +
+                             str(lst["balance"]),
+                             data=str(lst['accountNo'])))
     return accountsCard
 
 
