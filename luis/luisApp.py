@@ -78,7 +78,7 @@ class LuisConnect(ActivityHandler):
         self.PATTERN_MESSAGE = """It is a good pattern to use this event to send general greeting
                                 to user, explaining what your bot can do. In this example, the bot
                                 handles 'hello', 'hi', 'help' and 'intro'. Try it now, type 'hi'"""
-
+    debitAccountNo = ""
     async def on_turn(self, turn_context: TurnContext):
         await super().on_turn(turn_context)
 
@@ -113,13 +113,15 @@ class LuisConnect(ActivityHandler):
         return CardFactory.signin_card(card)
 
     async def on_message_activity(self, turn_context: TurnContext):
+        
+        #accessToken = None
         # weather_info=WeatherInformation()
         luis_result = await self.luis_recognizer.recognize(turn_context)
         text = luis_result.text
         print(text)
         isvalid = False
         if luis_result.properties == {}:
-            print("unrecognized intent --> adaptive",turn_context._activity.value["accountNo"] )
+            print("unrecognized intent --> adaptive")
             if turn_context._activity.value["type"] in ("Login"):
                 message =  login(turn_context)
                 await turn_context.send_activity(message)
@@ -144,7 +146,8 @@ class LuisConnect(ActivityHandler):
                 await turn_context.send_activity(reply)
             elif intent == 'UserLogin':
                 await self.__login_otp_card_card(turn_context)
-            elif intent == 'Accounts':
+            #elif intent == 'Accounts':
+            elif query in 'Account Balance':
                 #await self.__send_accountbalance_card(turn_context)
                 PARAMS = {'userName': "steve"}
                 url = self.restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
@@ -163,7 +166,7 @@ class LuisConnect(ActivityHandler):
                 data = historyResp.json()
                 print("printing response ", data["statusMsg"])
                 # Creating transactionHistory Card
-                card = buildAccountBalance_card(data).to_dict()
+                card = buildAccountBalance_card(data,"_transactionHistory").to_dict()
                 await turn_context.send_activity(
                     MessageFactory.attachment(CardFactory.adaptive_card(await card)))
                 await turn_context.send_activity(
@@ -173,10 +176,14 @@ class LuisConnect(ActivityHandler):
                     "Credit card xxxxxxxxxxxx7653 \n\n Current outstanding is $0.00 \n\n Card closed on 09/01/2020 \n\n Balance reward points are 514")
             elif intent == 'ServiceRequest':
                 await turn_context.send_activity("Currently there are no open service requests.")
-            elif query in ('382799319', 'xxxxxxxxx4566'):
+            elif query.find('_transactionHistory') !=-1:
                 # await self.__list_accountTransaction_card(turn_context)
                 # await self.__mobile_billDue_card(turn_context)
-                PARAMS = {'accountNo': 123456}
+                i = query.index("_")
+                accountNo = query[0:i].strip()
+                #l = s2.split(" b ")
+                print("Substring ",accountNo)
+                PARAMS = {'accountNo': accountNo}
                 # Getting OAuth Token
                 url = self.restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
                 payload = {}
@@ -201,13 +208,37 @@ class LuisConnect(ActivityHandler):
                 await self.__mobile_billDue_card(turn_context)
             elif intent == 'Billing':
                 await self.__show_invoice_card(turn_context)
-                await self.__show_selectAccountForBill_card(turn_context)
-            elif intent == "Debit_From" and query in ("Debit from xxxxxxxxx4567"):
+                PARAMS = {'userName': "steve"}
+                url = self.restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+                payload = {}
+                files = {}
+                response = requests.request("POST", url, auth=HTTPBasicAuth(self.auth_username, self.auth_password), data=payload,files=files)
+                print(response.text.encode('utf8'))
+                print(response.json()["access_token"])
+
+                # Getting transaction history
+                url = self.restServerURL+"/api/getAccounts"
+                payload = {}
+                headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
+                historyResp = requests.request("GET", url, headers=headers, data=payload, params=PARAMS)
+                print(historyResp.text.encode('utf8'))
+                data = historyResp.json()
+                print("printing response ", data["statusMsg"])
+                # Creating transactionHistory Card
+                card = buildAccountBalance_card(data,"_PayBill").to_dict()
+                await turn_context.send_activity(
+                    MessageFactory.attachment(CardFactory.adaptive_card(await card)))
+                #await self.__show_selectAccountForBill_card(turn_context)
+            elif query.find('_PayBill') !=-1:
+                i = query.index("_")
+                debitAccountNo = query[0:i].strip()
+                print("Amount debited from ",debitAccountNo)
                 await turn_context.send_activity("An OTP is sent to your registered mobile number xxxxxxxx90.")
                 await turn_context.send_activity("Please enter the OTP.")
             elif query == "1234":
+                debitAccountNo = ""
                 await turn_context.send_activity(
-                    "Transaction Successful !! Mobile bill paid for $100 from your account number xxxxxxxxx4567")
+                    "Transaction Successful !! Mobile bill paid for $100 from your account number "+debitAccountNo)
                 await turn_context.send_activity(
                     "As a loyal customer, we are happy to offer you one year free VISA card which comes with $25 movie voucher.\n\n Also your balance reward points 514 from card xxxxxxxxxxxx7653 will be added to the new card.")
                 await self.__show_congratulations_card(turn_context)

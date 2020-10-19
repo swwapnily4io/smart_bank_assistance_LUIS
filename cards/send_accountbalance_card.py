@@ -10,7 +10,8 @@ from botbuilder.schema import (
 from adaptivecardbuilder import Column, ColumnSet, Image, TextBlock, AdaptiveCard, InputText, ActionShowCard, ActionSubmit, ActionOpenUrl
 
 
-def buildAccountBalance_card(data):
+def buildAccountBalance_card(data,transactionHistory):
+    print("buildAccountBalance_card ",transactionHistory)
     accountsCard = AdaptiveCard(
         backgroundImage=
         "https://image.freepik.com/free-photo/wall-wallpaper-concrete-colored-painted-textured-concept_53876-31799.jpg"
@@ -34,7 +35,7 @@ def buildAccountBalance_card(data):
                              "\n Opened date: " + str(lst['createdOn']) +
                              "\n Balance is:" + str(lst["currencySymbol"]) +
                              str(lst["balance"]),
-                             data=str(lst['accountNo'])))
+                             data=str(lst['accountNo'])+transactionHistory))
     return accountsCard
 
 
