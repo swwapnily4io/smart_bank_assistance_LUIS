@@ -2,6 +2,15 @@ from botbuilder.core import (
     TurnContext,)
 import requests
 from requests.auth import HTTPBasicAuth
+from config.config_reader import ConfigReader
+
+def configReader():
+    config_reader = ConfigReader()
+    configuration = config_reader.read_config()
+    auth_username = configuration['AUTH_USERNAME']
+    auth_password = configuration['AUTH_PASSWORD']
+    restServerURL = configuration['REST_SERVER_URL']
+    return auth_username, auth_password, restServerURL
 
 def login(turn_context: TurnContext):
     print("Printing customer id------", turn_context._activity.value["customerId"])
@@ -28,17 +37,20 @@ def login(turn_context: TurnContext):
         message = "Please accept the terms and conditions."
         return message
     if (isvalid and turn_context._activity.value["type"] in ("Login")):
-        url = "http://localhost:8080/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+        auth_username, auth_password, restServerURL = configReader()
+        #url = "http://localhost:8080/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+        url = restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
         payload = {}
         files = {}
-        response = requests.request("POST", url, auth=HTTPBasicAuth('web', 'webpass'), data=payload,files=files)
+        response = requests.request("POST", url, auth=HTTPBasicAuth(auth_username, auth_password), data=payload,files=files)
         print(response.text.encode('utf8'))
         print(response.json()["access_token"])
         
         # defining a params dict for the parameters to be sent to the API
         PARAMS = {'userName': customerId, 'password': password}
         # sending get request and saving the response as response object
-        url = "http://localhost:8080/api/login"
+        #url = "http://localhost:8080/api/login"
+        url = restServerURL+"/api/login"
         payload = {}
         headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
         loginResp = requests.request("GET", url, headers=headers, params=PARAMS)
