@@ -41,6 +41,7 @@ from references_intentless.deposit_reference import deposit
 from references_intentless.loan_reference import loan
 
 from adaptive_cards.transactionhistory_adaptive_card import transaction_history_card
+from adaptive_cards.serviceRequestsList_adaptive_card import serviceRequestsList_card
 
 class LuisConnect(ActivityHandler):
     def __init__(self, user_state: UserState):
@@ -78,7 +79,6 @@ class LuisConnect(ActivityHandler):
         self.PATTERN_MESSAGE = """It is a good pattern to use this event to send general greeting
                                 to user, explaining what your bot can do. In this example, the bot
                                 handles 'hello', 'hi', 'help' and 'intro'. Try it now, type 'hi'"""
-    debitAccountNo = ""
     async def on_turn(self, turn_context: TurnContext):
         await super().on_turn(turn_context)
 
@@ -111,11 +111,9 @@ class LuisConnect(ActivityHandler):
             ],
         )
         return CardFactory.signin_card(card)
-
+    debitAccountNo = ""
     async def on_message_activity(self, turn_context: TurnContext):
         
-        #accessToken = None
-        # weather_info=WeatherInformation()
         luis_result = await self.luis_recognizer.recognize(turn_context)
         text = luis_result.text
         print(text)
@@ -175,7 +173,25 @@ class LuisConnect(ActivityHandler):
                 await turn_context.send_activity(
                     "Credit card xxxxxxxxxxxx7653 \n\n Current outstanding is $0.00 \n\n Card closed on 09/01/2020 \n\n Balance reward points are 514")
             elif intent == 'ServiceRequest':
-                await turn_context.send_activity("Currently there are no open service requests.")
+                PARAMS = {'accountNo': 123456}
+                url = self.restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+                payload = {}
+                files = {}
+                response = requests.request("POST", url, auth=HTTPBasicAuth(self.auth_username, self.auth_password), data=payload,files=files)
+                print(response.text.encode('utf8'))
+                print(response.json()["access_token"])
+
+                # Getting transaction history
+                url = self.restServerURL+"/api/getServiceRequestList"
+                payload = {}
+                headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
+                historyResp = requests.request("GET", url, headers=headers, data=payload, params=PARAMS)
+                print(historyResp.text.encode('utf8'))
+                data = historyResp.json()
+                print("printing response ", data["statusMsg"])
+                card = serviceRequestsList_card(data).to_dict()
+                await turn_context.send_activity(
+                    MessageFactory.attachment(CardFactory.adaptive_card(await card)))
             elif query.find('_transactionHistory') !=-1:
                 # await self.__list_accountTransaction_card(turn_context)
                 # await self.__mobile_billDue_card(turn_context)
