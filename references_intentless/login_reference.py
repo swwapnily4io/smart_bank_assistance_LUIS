@@ -40,17 +40,19 @@ def login(turn_context: TurnContext):
         auth_username, auth_password, restServerURL = configReader()
         #url = "http://localhost:8080/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
         url = restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
+        print(url)
         payload = {}
         files = {}
         response = requests.request("POST", url, auth=HTTPBasicAuth(auth_username, auth_password), data=payload,files=files)
         print(response.text.encode('utf8'))
         print(response.json()["access_token"])
-        
+        print("customer id - ",customerId)
         # defining a params dict for the parameters to be sent to the API
         PARAMS = {'userName': customerId, 'password': password}
         # sending get request and saving the response as response object
         #url = "http://localhost:8080/api/login"
         url = restServerURL+"/api/login"
+        print(url)
         payload = {}
         headers = {'Authorization': 'Bearer ' + response.json()["access_token"]}
         loginResp = requests.request("GET", url, headers=headers, params=PARAMS)
