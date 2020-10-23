@@ -49,8 +49,13 @@ LOAN_APPLICATION_CARD = {
         },
         {
             "type": "Input.Text",
-            "placeholder": "Debiting Account Number",
-            "id": "account_number"
+            "placeholder": "Mobile Number",
+            "id": "mobile_number"
+        },
+        {
+            "type": "Input.Text",
+            "placeholder": "Email ID",
+            "id": "email"
         },
         {
             "type": "ActionSet",

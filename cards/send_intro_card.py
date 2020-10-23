@@ -9,7 +9,7 @@ from botbuilder.schema import (
 
 def intro_card():
     card = HeroCard(
-        title="Welcome Steve!",
+        title="Welcome!",
         text="Hope you are doing good. How can we help you today. Let's start with one of the options from below.",
 
         images=[CardImage(

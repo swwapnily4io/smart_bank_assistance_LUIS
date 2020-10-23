@@ -95,9 +95,7 @@ class LuisConnect(ActivityHandler):
         """
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
-                await turn_context.send_activity(
-                    f"Hi there. " + self.WELCOME_MESSAGE
-                )
+                await self.__send_intro_card(turn_context)
 
     def create_signin_card(self) -> Attachment:
         card = SigninCard(
