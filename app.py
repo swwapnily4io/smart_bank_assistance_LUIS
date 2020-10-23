@@ -122,4 +122,4 @@ APP.router.add_post("/api/messages", messages)
 if __name__ == '__main__':
     #app.run(port= 3978)
     #app.run()
-    web.run_app(APP,  host="localhost", port=5000)
+    web.run_app(APP,  host="0.0.0.0", port=8443)
