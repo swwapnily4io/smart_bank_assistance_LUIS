@@ -65,7 +65,7 @@ loop = asyncio.get_event_loop()
 #         return Response(status=406)  # status for Not Acceptable
 
 
-SETTINGS = BotFrameworkAdapterSettings("", "")
+SETTINGS = BotFrameworkAdapterSettings("9c7fe1a9-6dff-4a18-bb7f-7c8acc78b57c", "111112222233333444445555566666")
 ADAPTER = BotFrameworkAdapter(SETTINGS)
 
 
