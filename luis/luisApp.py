@@ -33,7 +33,7 @@ from cards.send_intro_card import intro_card
 from cards.mobile_billPaymentConfirmation_card import billPaymentConfirmation_card
 from cards.mobile_billDue_card import mobile_billDue_card
 from cards.mobile_confirmation_card import mobile_confirmation_card
-from cards.send_accountbalance_card import accountbalance_card, buildAccountBalance_card
+from cards.send_accountbalance_card import accountbalance_card, buildAccountBalance_card,buildSelectAccount_card
 from cards.show_selectAccountForBill_card import account_SelectionForBill_card
 
 from references_intentless.login_reference import login
@@ -137,7 +137,7 @@ class LuisConnect(ActivityHandler):
             query = result.query
             intent = json.loads((str(result.intents[0])).replace("'", "\""))['intent']
 
-            if intent == 'WelcomeUser' and query not in ("1234", "369"):
+            if intent == 'WelcomeUser' and query not in ("123456", "369369"):
                 reply.attachments.append(self.create_signin_card())
                 await turn_context.send_activity(reply)
             elif intent == 'UserLogin':
@@ -170,6 +170,8 @@ class LuisConnect(ActivityHandler):
             elif intent == 'CreditCard':
                 await turn_context.send_activity(
                     "Credit card xxxxxxxxxxxx7653 \n\n Current outstanding is $0.00 \n\n Card closed on 09/01/2020 \n\n Balance reward points are 514")
+                await turn_context.send_activity(
+                    "As a loyal customer, we are happy to offer you one year free VISA card which comes with $25 movie voucher.\n\n Also your balance reward points 514 from card xxxxxxxxxxxx7653 will be added to the new card.")
             elif intent == 'ServiceRequest':
                 PARAMS = {'accountNo': 123456}
                 url = self.restServerURL+"/oauth/token?grant_type=password&username=swwapnil&password=swwapnilpass"
@@ -239,7 +241,7 @@ class LuisConnect(ActivityHandler):
                 data = historyResp.json()
                 print("printing response ", data["statusMsg"])
                 # Creating transactionHistory Card
-                card = buildAccountBalance_card(data,"_PayBill").to_dict()
+                card = buildSelectAccount_card(data,"_PayBill").to_dict()
                 await turn_context.send_activity(
                     MessageFactory.attachment(CardFactory.adaptive_card(await card)))
                 #await self.__show_selectAccountForBill_card(turn_context)
@@ -249,7 +251,7 @@ class LuisConnect(ActivityHandler):
                 print("Amount debited from ",debitAccountNo)
                 await turn_context.send_activity("An OTP is sent to your registered mobile number xxxxxxxx90.")
                 await turn_context.send_activity("Please enter the OTP.")
-            elif query == "1234":
+            elif query == "123456":
                 debitAccountNo = ""
                 await turn_context.send_activity(
                     "Transaction Successful !! Mobile bill paid for $100 from your account number "+debitAccountNo)
@@ -266,7 +268,7 @@ class LuisConnect(ActivityHandler):
                 await self.__loan_application_card(turn_context)
             elif intent == 'Deposits':
                 await self.__deposits_application_card(turn_context)
-            elif query in ("369"):
+            elif query in ("369369"):
                 await self.__send_intro_card(turn_context)
 
     async def __send_intro_card(self, turn_context: TurnContext):

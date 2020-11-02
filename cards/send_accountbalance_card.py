@@ -38,6 +38,33 @@ def buildAccountBalance_card(data,transactionHistory):
                              data=str(lst['accountNo'])+transactionHistory))
     return accountsCard
 
+def buildSelectAccount_card(data,param):
+    accountsCard = AdaptiveCard(
+        backgroundImage=
+        "https://image.freepik.com/free-photo/wall-wallpaper-concrete-colored-painted-textured-concept_53876-31799.jpg"
+    )
+    accountsCard.add(
+        TextBlock(
+            text=
+            "Select an account to proceed with the payment",
+            color="light",
+            size="Medium",
+            weight="Bolder"))
+    if (data["statusMsg"] is not None and data["statusMsg"] in ("Success")):
+        print("success response ", data)
+        accountsList = data["accountList"]
+
+        for lst in accountsList:
+            print(lst['accountType'])
+            accountsCard.add(
+                ActionSubmit(title="" + str(lst['accountType']) +
+                             "\n Account No. " + str(lst['accountNo']) +
+                             "\n Opened date: " + str(lst['createdOn']) +
+                             "\n Balance is:" + str(lst["currencySymbol"]) +
+                             str(lst["balance"]),
+                             data=str(lst['accountNo'])+param))
+    return accountsCard
+
 
 def accountbalance_card():
     card = ThumbnailCard(
